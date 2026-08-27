@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "192062596418",
+    "project_id": "brainxperts-18a86",
+    "storage_bucket": "brainxperts-18a86.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192062596418:android:003f6bbf046abacde0d4db",
+        "android_client_info": {
+          "package_name": "com.brainxperts.brainxperts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAMZSu6riFwpWiBkhsRUqTXhdHAjWvwzg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
