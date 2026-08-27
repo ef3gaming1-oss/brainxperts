@@ -10,12 +10,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter pub get
-      - run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
+
+      - name: Setup Full Flutter Template
+        run: |
+          mkdir temp_app
+          cd temp_app
+          flutter create --org com.brainxperts --project-name brainxperts .
+          cp -r android ../
+          cp -r ios ../ || true
+          cd ..
+          rm -rf temp_app
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: brainxperts-apk
           path: build/app/outputs/flutter-apk/app-release.apk
