@@ -26,10 +26,24 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Configure MinSDK
+      - name: Auto-Sync Package Name and AndroidX
         run: |
+          # Detect actual package name from google-services.json
+          PKG_NAME=$(grep -o '"package_name": *"[^"]*"' android/app/google-services.json | head -1 | cut -d'"' -f4)
+          if [ -z "$PKG_NAME" ]; then
+            PKG_NAME="com.brainxperts.brainxperts"
+          fi
+          echo "Syncing package to: $PKG_NAME"
+
+          # Replace all old package names with the real Firebase package name
+          find android/ -type f -name "build.gradle" -exec sed -i "s/applicationId .*/applicationId \"$PKG_NAME\"/g" {} +
+          find android/ -type f -name "build.gradle" -exec sed -i "s/namespace .*/namespace \"$PKG_NAME\"/g" {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/minSdkVersion .*/minSdkVersion 23/g' {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/flutter.minSdkVersion/23/g' {} +
+
+          # Enable AndroidX
+          echo "android.useAndroidX=true" >> android/gradle.properties
+          echo "android.enableJetifier=true" >> android/gradle.properties
 
       - name: Install dependencies
         run: flutter pub get
