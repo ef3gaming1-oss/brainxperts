@@ -73,9 +73,15 @@ jobs:
       - name: Build Release APK
         run: flutter build apk --release
 
+      - name: Extract Real SHA-1 Key
+        run: |
+          echo "=================================================="
+          echo "🔥 YOUR EXACT APK SHA-1 IS:"
+          keytool -printcert -jarfile build/app/outputs/flutter-apk/app-release.apk | grep "SHA1:"
+          echo "=================================================="
+
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: BrainXperts-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
-          
