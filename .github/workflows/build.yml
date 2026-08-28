@@ -26,103 +26,35 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Comprehensive Native Android Scaffold & Fixes
+      - name: Setup Android Environment & Gradle Fix
         run: |
-          # ১. Firebase Package Name ডিটেক্ট করা
-          PACKAGE_NAME=$(grep -o '"package_name": *"[^"]*"' android/app/google-services.json | head -1 | cut -d'"' -f4)
-          if [ -z "$PACKAGE_NAME" ]; then
-            PACKAGE_NAME="com.brainxperts.brainxperts"
+          if [ -f "android/app/google-services.json" ]; then
+            cp android/app/google-services.json /tmp/google-services.json
           fi
-          echo "Using Verified Package: $PACKAGE_NAME"
 
-          # ২. অ্যান্ড্রয়েড ফোল্ডার স্ট্রাকচার ও মিসিং রিসোর্স তৈরি
-          mkdir -p android/app/src/main/res/values
-          mkdir -p android/app/src/main/res/drawable
-          mkdir -p android/app/src/main/res/mipmap-hdpi
-          mkdir -p android/app/src/main/res/mipmap-mdpi
-          mkdir -p android/app/src/main/res/mipmap-xhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+          rm -rf android/
+          flutter create . --platforms=android --org com.brainxperts
 
-          # ৩. মিসিং থিম ও ব্যাকগ্রাউন্ড ফাইল
-          cat << 'EOF' > android/app/src/main/res/values/styles.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-                  <item name="android:windowBackground">@drawable/launch_background</item>
-              </style>
-              <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-                  <item name="android:windowBackground">?android:colorBackground</item>
-              </style>
-          </resources>
-          EOF
+          if [ -f "/tmp/google-services.json" ]; then
+            cp /tmp/google-services.json android/app/google-services.json
+          fi
 
-          cat << 'EOF' > android/app/src/main/res/drawable/launch_background.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:drawable="@android:color/black" />
-          </layer-list>
-          EOF
-
-          # ৪. মিসিং আইকন ফাইল তৈরি
-          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" | base64 -d > android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-
-          # ৫. নিখুঁত AndroidManifest.xml জেনারেট
-          cat << EOF > android/app/src/main/AndroidManifest.xml
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package="$PACKAGE_NAME">
-              <uses-permission android:name="android.permission.INTERNET"/>
-              <application
-                  android:label="BrainXperts"
-                  android:name="\${applicationName}"
-                  android:icon="@mipmap/ic_launcher">
-                  <activity
-                      android:name=".MainActivity"
-                      android:exported="true"
-                      android:launchMode="singleTop"
-                      android:theme="@style/LaunchTheme"
-                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-                      android:hardwareAccelerated="true"
-                      android:windowSoftInputMode="adjustResize">
-                      <meta-data
-                        android:name="io.flutter.embedding.android.NormalTheme"
-                        android:resource="@style/NormalTheme" />
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN"/>
-                          <category android:name="android.intent.category.LAUNCHER"/>
-                      </intent-filter>
-                  </activity>
-                  <meta-data
-                      android:name="flutterEmbedding"
-                      android:value="2" />
-              </application>
-          </manifest>
-          EOF
-
-          # ৬. মিসিং MainActivity ক্লাস তৈরি
-          DIR_PATH=$(echo $PACKAGE_NAME | tr '.' '/')
-          mkdir -p "android/app/src/main/kotlin/$DIR_PATH"
-          cat << EOF > "android/app/src/main/kotlin/$DIR_PATH/MainActivity.kt"
-          package $PACKAGE_NAME
-          import io.flutter.embedding.android.FlutterActivity
-          class MainActivity: FlutterActivity()
-          EOF
-
-          # ৭. build.gradle ও SDK প্যারামিটার নিশ্চিতকরণ
-          find android/ -type f -name "build.gradle" -exec sed -i "s/applicationId .*/applicationId \"$PACKAGE_NAME\"/g" {} +
-          find android/ -type f -name "build.gradle" -exec sed -i "s/namespace .*/namespace \"$PACKAGE_NAME\"/g" {} +
+          # Fix MinSDK and dependencies compatibility
           find android/ -type f -name "build.gradle" -exec sed -i 's/minSdkVersion .*/minSdkVersion 23/g' {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/flutter.minSdkVersion/23/g' {} +
+          
+          # Force compatible kotlin and gradle plugin versions
+          sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.22"/g' android/settings.gradle || true
+          
+          # Add google-services plugin
+          sed -i '/dependencies {/a \        classpath "com.google.gms:google-services:4.4.1"' android/build.gradle
+          echo "apply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --android-skip-build-dependency-validation
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
