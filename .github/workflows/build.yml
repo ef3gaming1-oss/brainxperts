@@ -26,10 +26,15 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Configure SDK and Gradle
+      - name: Auto-match Firebase Package Name and MinSDK
         run: |
+          PACKAGE_NAME=$(grep -o '"package_name": *"[^"]*"' android/app/google-services.json | head -1 | cut -d'"' -f4)
+          echo "Detected Firebase Package: $PACKAGE_NAME"
+          find android/ -type f -name "build.gradle" -exec sed -i "s/applicationId .*/applicationId \"$PACKAGE_NAME\"/g" {} +
+          find android/ -type f -name "build.gradle" -exec sed -i "s/namespace .*/namespace \"$PACKAGE_NAME\"/g" {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/minSdkVersion 21/minSdkVersion 23/g' {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/flutter.minSdkVersion/23/g' {} +
+          find android/ -type f -name "AndroidManifest.xml" -exec sed -i "s/package=\"[^\"]*\"/package=\"$PACKAGE_NAME\"/g" {} +
 
       - name: Install dependencies
         run: flutter pub get
