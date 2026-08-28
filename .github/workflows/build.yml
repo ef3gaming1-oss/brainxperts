@@ -26,53 +26,52 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: All-in-One Android & Firebase Fix
+      - name: Complete Android Rebuild & Fix Linking
         run: |
-          # 1. Detect Package Name from google-services.json
-          PKG_NAME=$(grep -o '"package_name": *"[^"]*"' android/app/google-services.json | head -1 | cut -d'"' -f4)
+          # 1. google-services.json ফাইল ব্যাকআপ রাখা
+          if [ -f "android/app/google-services.json" ]; then
+            cp android/app/google-services.json /tmp/google-services.json
+          fi
+
+          # 2. আসল প্যাকেজ নেম বের করা
+          PKG_NAME=""
+          if [ -f "/tmp/google-services.json" ]; then
+            PKG_NAME=$(grep -o '"package_name": *"[^"]*"' /tmp/google-services.json | head -1 | cut -d'"' -f4)
+          fi
           if [ -z "$PKG_NAME" ]; then
             PKG_NAME="com.brainxperts.brainxperts"
           fi
-          echo "Using Package: $PKG_NAME"
+          echo "Syncing with package: $PKG_NAME"
 
-          # 2. Fix build.gradle configuration (Package, Namespace, MinSDK 23)
+          # 3. ভাঙা বা অসম্পূর্ণ অ্যান্ড্রয়েড ফোল্ডার ক্লিন করে নতুন স্ট্যান্ডার্ড অ্যান্ড্রয়েড প্রজেক্ট তৈরি
+          rm -rf android/
+          flutter create . --platforms=android --org $(echo $PKG_NAME | rev | cut -d. -f2- | rev)
+
+          # 4. google-services.json যথাস্থানে ফিরিয়ে আনা
+          if [ -f "/tmp/google-services.json" ]; then
+            mkdir -p android/app
+            cp /tmp/google-services.json android/app/google-services.json
+          fi
+
+          # 5. MinSDK 23 এবং সঠিক Package ID সেট করা
           find android/ -type f -name "build.gradle" -exec sed -i "s/applicationId .*/applicationId \"$PKG_NAME\"/g" {} +
           find android/ -type f -name "build.gradle" -exec sed -i "s/namespace .*/namespace \"$PKG_NAME\"/g" {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/minSdkVersion .*/minSdkVersion 23/g' {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/flutter.minSdkVersion/23/g' {} +
 
-          # 3. Clean deprecated package attribute from Manifests
-          find android/ -type f -name "AndroidManifest.xml" -exec sed -i 's/package="[^"]*"//g' {} +
+          # 6. Google Services প্লাগিন যুক্ত করা
+          sed -i '/plugins {/a \    id "com.google.gms.google-services" version "4.4.1" apply false' android/settings.gradle
+          sed -i '/plugins {/a \    id "com.google.gms.google-services"' android/app/build.gradle
 
-          # 4. Generate LaunchTheme & NormalTheme
-          mkdir -p android/app/src/main/res/values
-          cat << 'EOF' > android/app/src/main/res/values/styles.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-                  <item name="android:windowBackground">@android:color/black</item>
-              </style>
-              <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-                  <item name="android:windowBackground">?android:colorBackground</item>
-              </style>
-          </resources>
-          EOF
-
-          # 5. Generate missing ic_launcher icons (Valid 1x1 PNG)
-          for dir in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
-            mkdir -p "android/app/src/main/res/$dir"
-            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" | base64 -d > "android/app/src/main/res/$dir/ic_launcher.png"
-          done
-
-          # 6. Enable AndroidX
+          # 7. AndroidX এনাবল করা
           echo "android.useAndroidX=true" >> android/gradle.properties
           echo "android.enableJetifier=true" >> android/gradle.properties
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --release --android-skip-build-dependency-validation
+      - name: Build Release APK
+        run: flutter build apk --release
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
