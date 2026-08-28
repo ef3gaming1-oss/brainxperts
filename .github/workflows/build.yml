@@ -26,22 +26,25 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Auto-Sync Package Name and AndroidX
+      - name: Fix Manifest Package and Sync Firebase
         run: |
-          # Detect actual package name from google-services.json
+          # 1. Detect actual package name from google-services.json
           PKG_NAME=$(grep -o '"package_name": *"[^"]*"' android/app/google-services.json | head -1 | cut -d'"' -f4)
           if [ -z "$PKG_NAME" ]; then
             PKG_NAME="com.brainxperts.brainxperts"
           fi
           echo "Syncing package to: $PKG_NAME"
 
-          # Replace all old package names with the real Firebase package name
+          # 2. Remove deprecated package attribute from all AndroidManifest.xml files
+          find android/ -type f -name "AndroidManifest.xml" -exec sed -i 's/package="[^"]*"//g' {} +
+
+          # 3. Update applicationId and namespace in build.gradle
           find android/ -type f -name "build.gradle" -exec sed -i "s/applicationId .*/applicationId \"$PKG_NAME\"/g" {} +
           find android/ -type f -name "build.gradle" -exec sed -i "s/namespace .*/namespace \"$PKG_NAME\"/g" {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/minSdkVersion .*/minSdkVersion 23/g' {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/flutter.minSdkVersion/23/g' {} +
 
-          # Enable AndroidX
+          # 4. Enable AndroidX
           echo "android.useAndroidX=true" >> android/gradle.properties
           echo "android.enableJetifier=true" >> android/gradle.properties
 
@@ -56,4 +59,3 @@ jobs:
         with:
           name: BrainXperts-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
-          
