@@ -20,25 +20,20 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Setup Android with Firebase Support
+      - name: Fix and Prepare Project
         run: |
-          mkdir -p backup
-          [ -f android/app/google-services.json ] && cp android/app/google-services.json backup/ || true
+          mkdir -p /tmp/backup
+          [ -f android/app/google-services.json ] && cp android/app/google-services.json /tmp/backup/ || true
           rm -rf android
-          flutter create . --platforms=android --org=com.example
+          flutter create --platforms=android --org=com.example .
           mkdir -p android/app
-          [ -f backup/google-services.json ] && cp backup/google-services.json android/app/ || true
-          
-          # Root build.gradle-এ Google Services প্লাগইন যোগ
-          sed -i '/dependencies {/a \        classpath "com.google.gms:google-services:4.4.1"' android/build.gradle || true
-          
-          # App build.gradle-এ প্লাগইন ও minSdkVersion 21 সেট করা
-          echo 'apply plugin: "com.google.gms.google-services"' >> android/app/build.gradle
+          [ -f /tmp/backup/google-services.json ] && cp /tmp/backup/google-services.json android/app/ || true
           sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle || true
 
-      - name: Get dependencies
+      - name: Install dependencies
         run: flutter pub get
 
       - name: Build APK
