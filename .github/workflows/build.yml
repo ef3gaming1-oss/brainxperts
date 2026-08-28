@@ -22,8 +22,10 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Recreate missing Android files
-        run: flutter create . --platforms=android --org=com.example
+      - name: Clean and Recreate Android Platform
+        run: |
+          rm -rf android
+          flutter create . --platforms=android --org=com.example
 
       - name: Get dependencies
         run: flutter pub get
