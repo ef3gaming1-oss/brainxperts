@@ -26,25 +26,45 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Fix Manifest Package and Sync Firebase
+      - name: All-in-One Android & Firebase Fix
         run: |
-          # 1. Detect actual package name from google-services.json
+          # 1. Detect Package Name from google-services.json
           PKG_NAME=$(grep -o '"package_name": *"[^"]*"' android/app/google-services.json | head -1 | cut -d'"' -f4)
           if [ -z "$PKG_NAME" ]; then
             PKG_NAME="com.brainxperts.brainxperts"
           fi
-          echo "Syncing package to: $PKG_NAME"
+          echo "Using Package: $PKG_NAME"
 
-          # 2. Remove deprecated package attribute from all AndroidManifest.xml files
-          find android/ -type f -name "AndroidManifest.xml" -exec sed -i 's/package="[^"]*"//g' {} +
-
-          # 3. Update applicationId and namespace in build.gradle
+          # 2. Fix build.gradle configuration (Package, Namespace, MinSDK 23)
           find android/ -type f -name "build.gradle" -exec sed -i "s/applicationId .*/applicationId \"$PKG_NAME\"/g" {} +
           find android/ -type f -name "build.gradle" -exec sed -i "s/namespace .*/namespace \"$PKG_NAME\"/g" {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/minSdkVersion .*/minSdkVersion 23/g' {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/flutter.minSdkVersion/23/g' {} +
 
-          # 4. Enable AndroidX
+          # 3. Clean deprecated package attribute from Manifests
+          find android/ -type f -name "AndroidManifest.xml" -exec sed -i 's/package="[^"]*"//g' {} +
+
+          # 4. Generate LaunchTheme & NormalTheme
+          mkdir -p android/app/src/main/res/values
+          cat << 'EOF' > android/app/src/main/res/values/styles.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+                  <item name="android:windowBackground">@android:color/black</item>
+              </style>
+              <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+                  <item name="android:windowBackground">?android:colorBackground</item>
+              </style>
+          </resources>
+          EOF
+
+          # 5. Generate missing ic_launcher icons (Valid 1x1 PNG)
+          for dir in mipmap-hdpi mipmap-mdpi mipmap-xhdpi mipmap-xxhdpi mipmap-xxxhdpi; do
+            mkdir -p "android/app/src/main/res/$dir"
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" | base64 -d > "android/app/src/main/res/$dir/ic_launcher.png"
+          done
+
+          # 6. Enable AndroidX
           echo "android.useAndroidX=true" >> android/gradle.properties
           echo "android.enableJetifier=true" >> android/gradle.properties
 
@@ -59,3 +79,4 @@ jobs:
         with:
           name: BrainXperts-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          
