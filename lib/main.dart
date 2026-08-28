@@ -1,3 +1,4 @@
+// ==================== PART 1: Core Setup, Themes & Logos ====================
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -113,6 +114,7 @@ class CoinBadge extends StatelessWidget {
     );
   }
 }
+// ==================== PART 2: Intro Slider & Sign Up Screen ====================
 class IntroSlider extends StatefulWidget {
   const IntroSlider({super.key});
   @override
@@ -373,6 +375,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
+// ==================== PART 3: Navigation Host & User Logic ====================
 class BottomNavHost extends StatefulWidget {
   final User user;
   const BottomNavHost({super.key, required this.user});
@@ -530,7 +533,7 @@ class _BottomNavHostState extends State<BottomNavHost> {
     );
   }
 }
-// ==================== TAB 1: Home Page ====================
+// ==================== PART 4: Home Dashboard & Quiz List ====================
 class HomeFeedView extends StatelessWidget {
   final int coins;
   final String userName;
@@ -819,7 +822,6 @@ class HomeFeedView extends StatelessWidget {
   }
 }
 
-// ==================== TAB 2: Quiz List ====================
 class QuizCategoryListView extends StatelessWidget {
   final Future<bool> Function(int) onPlay;
   final Function(int) onBonus;
@@ -872,7 +874,7 @@ class QuizCategoryListView extends StatelessWidget {
     );
   }
 }
-// ==================== TAB 3: Purchase Shop (Premium Wallet) ====================
+// ==================== PART 5: Purchase Wallet & Profile ====================
 class PurchaseGridView extends StatelessWidget {
   final int coins;
   final Function(int) onAdd;
@@ -995,7 +997,6 @@ class PurchaseGridView extends StatelessWidget {
   }
 }
 
-// ==================== TAB 4: Profile ====================
 class ProfileFullView extends StatelessWidget {
   final User user;
   final String name;
@@ -1182,7 +1183,7 @@ class ProfileFullView extends StatelessWidget {
         ),
       );
 }
-// ==================== কুইজ ইঞ্জিন ও প্রশ্নভাণ্ডার ====================
+// ==================== PART 6: Quiz Play Engine & Question Bank ====================
 class ActiveQuizPlayView extends StatefulWidget {
   final String title;
   final String categoryKey;
