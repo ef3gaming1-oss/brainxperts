@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
@@ -26,29 +26,10 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Setup Android Environment & Gradle Fix
+      - name: Configure MinSDK
         run: |
-          if [ -f "android/app/google-services.json" ]; then
-            cp android/app/google-services.json /tmp/google-services.json
-          fi
-
-          rm -rf android/
-          flutter create . --platforms=android --org com.brainxperts
-
-          if [ -f "/tmp/google-services.json" ]; then
-            cp /tmp/google-services.json android/app/google-services.json
-          fi
-
-          # Fix MinSDK and dependencies compatibility
           find android/ -type f -name "build.gradle" -exec sed -i 's/minSdkVersion .*/minSdkVersion 23/g' {} +
           find android/ -type f -name "build.gradle" -exec sed -i 's/flutter.minSdkVersion/23/g' {} +
-          
-          # Force compatible kotlin and gradle plugin versions
-          sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.22"/g' android/settings.gradle || true
-          
-          # Add google-services plugin
-          sed -i '/dependencies {/a \        classpath "com.google.gms:google-services:4.4.1"' android/build.gradle
-          echo "apply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
 
       - name: Install dependencies
         run: flutter pub get
@@ -56,8 +37,9 @@ jobs:
       - name: Build APK
         run: flutter build apk --release --android-skip-build-dependency-validation
 
-      - name: Upload APK
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: BrainXperts-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          
