@@ -166,7 +166,7 @@ class _IntroSliderState extends State<IntroSlider> {
                     onPressed: () => Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const SignUpPage())),
+                            builder: (context) => const SignUpPage())),
                     child: const Text('Skip',
                         style: TextStyle(color: Colors.white70, fontSize: 16)),
                   ),
@@ -178,7 +178,7 @@ class _IntroSliderState extends State<IntroSlider> {
                 controller: _pageCtrl,
                 onPageChanged: (i) => setState(() => _curr = i),
                 itemCount: 3,
-                itemBuilder: (_, i) => Column(
+                itemBuilder: (context, i) => Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const OwlAppLogo(size: 110),
@@ -250,7 +250,7 @@ class _IntroSliderState extends State<IntroSlider> {
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const SignUpPage()));
+                              builder: (context) => const SignUpPage()));
                     }
                   },
                   child: Text(_curr == 2 ? 'শুরু করুন ›' : 'পরবর্তী ›',
@@ -811,7 +811,7 @@ class HomeFeedView extends StatelessWidget {
       Navigator.push(
           ctx,
           MaterialPageRoute(
-              builder: (_) => ActiveQuizPlayView(
+              builder: (context) => ActiveQuizPlayView(
                   title: title,
                   categoryKey: catKey,
                   onPerfectScore: () => onBonus(10))));
@@ -860,7 +860,7 @@ class QuizCategoryListView extends StatelessWidget {
                 Navigator.push(
                     ctx,
                     MaterialPageRoute(
-                        builder: (_) => ActiveQuizPlayView(
+                        builder: (context) => ActiveQuizPlayView(
                             title: list[i]['t'] as String,
                             categoryKey: list[i]['k'] as String,
                             onPerfectScore: () => onBonus(10))));
@@ -944,7 +944,7 @@ class PurchaseGridView extends StatelessWidget {
                 mainAxisSpacing: 10,
                 childAspectRatio: 1.1),
             itemCount: packages.length,
-            itemBuilder: (_, i) => Container(
+            itemBuilder: (context, i) => Container(
               decoration: BoxDecoration(
                   color: const Color(0xFF131D38),
                   borderRadius: BorderRadius.circular(12),
@@ -1121,7 +1121,7 @@ class ProfileFullView extends StatelessWidget {
     final ctrl = TextEditingController(text: name);
     showDialog(
       context: ctx,
-      builder: () => AlertDialog(
+      builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF131D38),
         title: const Text('Account Settings', style: TextStyle(color: Colors.white)),
         content: TextField(
@@ -1135,7 +1135,7 @@ class ProfileFullView extends StatelessWidget {
           TextButton(
             onPressed: () {
               if (ctrl.text.isNotEmpty) onNameChange(ctrl.text);
-              Navigator.pop(ctx);
+              Navigator.pop(context);
             },
             child: const Text('সংরক্ষণ করুন', style: TextStyle(color: Colors.blueAccent)),
           )
@@ -1146,7 +1146,7 @@ class ProfileFullView extends StatelessWidget {
 
   void _showPrivacyDialog(BuildContext ctx) => showDialog(
         context: ctx,
-        builder: () => AlertDialog(
+        builder: (context) => AlertDialog(
           backgroundColor: const Color(0xFF131D38),
           title: const Row(
             children: [
@@ -1167,7 +1167,7 @@ class ProfileFullView extends StatelessWidget {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
+                onPressed: () => Navigator.pop(context),
                 child: const Text('সম্মত আছি', style: TextStyle(color: Colors.blueAccent)))
           ],
         ),
@@ -1175,7 +1175,7 @@ class ProfileFullView extends StatelessWidget {
 
   void _showMsg(BuildContext ctx, String t, String m) => showDialog(
         context: ctx,
-        builder: () => AlertDialog(
+        builder: (context) => AlertDialog(
           backgroundColor: const Color(0xFF131D38),
           title: Text(t, style: const TextStyle(color: Colors.white)),
           content: Text(m, style: const TextStyle(color: Colors.white70)),
@@ -1398,7 +1398,7 @@ class _ActiveQuizPlayViewState extends State<ActiveQuizPlayView> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: () => AlertDialog(
+          builder: (context) => AlertDialog(
             backgroundColor: const Color(0xFF131D38),
             title: Text(perfect ? 'অসাধারণ! ১০/১০ জ্যাকপট! 🎉' : 'কুইজ সমাপ্ত!',
                 style: const TextStyle(color: Colors.white)),
