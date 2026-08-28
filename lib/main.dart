@@ -18,7 +18,6 @@ void main() async {
   ));
 }
 
-// Auth State Wrapper
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -42,7 +41,6 @@ class AuthWrapper extends StatelessWidget {
   }
 }
 
-// Custom Owl Logo
 class OwlAppLogo extends StatelessWidget {
   final double size;
   const OwlAppLogo({super.key, required this.size});
@@ -90,7 +88,6 @@ class OwlAppLogo extends StatelessWidget {
       );
 }
 
-// Custom Coin Badge
 class CoinBadge extends StatelessWidget {
   final double size;
   const CoinBadge({super.key, required this.size});
@@ -116,7 +113,6 @@ class CoinBadge extends StatelessWidget {
     );
   }
 }
-// 1. Intro Slider
 class IntroSlider extends StatefulWidget {
   const IntroSlider({super.key});
   @override
@@ -272,7 +268,6 @@ class _IntroSliderState extends State<IntroSlider> {
   }
 }
 
-// 2. Google Authentication Page
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -378,7 +373,6 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
-// 3. Navigation Host
 class BottomNavHost extends StatefulWidget {
   final User user;
   const BottomNavHost({super.key, required this.user});
@@ -787,7 +781,7 @@ class HomeFeedView extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: color.withAlpha(77))),
         child: Column(
-          mainAxisAlignment:指示Alignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Icon(icon, size: 36, color: color),
             Text(title,
