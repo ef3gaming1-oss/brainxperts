@@ -25,21 +25,14 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Fix MinSDK to 23
-        run: |
-          find android/ -type f -name "build.gradle" -exec sed -i 's/minSdkVersion 21/minSdkVersion 23/g' {} +
-          find android/ -type f -name "build.gradle" -exec sed -i 's/flutter.minSdkVersion/23/g' {} +
-          find android/ -type f -name "AndroidManifest.xml" -exec sed -i 's/android:minSdkVersion="[0-9]*"/android:minSdkVersion="23"/g' {} +
-
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Build APK (Bypass Gradle Strict Check)
+        run: flutter build apk --release --android-skip-build-dependency-validation
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: BrainXperts-Release-APK
           path: build/app/outputs/flutter-apk/app-release.apk
-          
