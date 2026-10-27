@@ -70,6 +70,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate app launcher icon
+        run: dart run flutter_launcher_icons
+
+      - name: Build test APK
+        run: flutter build apk --debug
+
+      - name: Upload test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BrainXperts-Test-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
       - name: Build Release APK
         run: flutter build apk --release
 
