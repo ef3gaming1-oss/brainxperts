@@ -84,21 +84,29 @@ jobs:
             > android/key.properties
 
           python3 - <<'PY'
+          import re
           from pathlib import Path
 
           path = Path("android/app/build.gradle")
           text = path.read_text()
 
-          prefix = """def keystoreProperties = new Properties()
-          def keystorePropertiesFile = rootProject.file('key.properties')
-          if (keystorePropertiesFile.exists()) {
-              keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-          }
+          prefix = "\n".join([
+              "def keystoreProperties = new Properties()",
+              "def keystorePropertiesFile = rootProject.file('key.properties')",
+              "if (keystorePropertiesFile.exists()) {",
+              "    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))",
+              "}",
+              "",
+          ])
 
-          """
-
+          # Gradle requires the plugins block to remain at the very top.
+          # Insert keystore variables immediately after that block.
           if "def keystorePropertiesFile" not in text:
-              text = prefix + text
+              plugin_match = re.search(r"(?s)^plugins\s*\{.*?^\}", text, re.MULTILINE)
+              if not plugin_match:
+                  raise SystemExit("plugins block not found")
+              insert_at = plugin_match.end()
+              text = text[:insert_at] + "\n\n" + prefix + text[insert_at:]
 
           signing_block = """    signingConfigs {
                   release {
