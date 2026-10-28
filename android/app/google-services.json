@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "192062596418-3ujsnnpo48uhq1v7qcpqnpr2qc68afbs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brainxperts.brainxperts",
+            "certificate_hash": "c41cb7457e759a321c1f799a09010687f2742c94"
+          }
+        },
+        {
           "client_id": "192062596418-64mmho1u54ginh83kisbkq7lgs0v011u.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
